@@ -1,8 +1,7 @@
 /**
  * Copyright (c) 2015-present, Nicolas Gallagher.
- * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
+ * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
  * @flow
@@ -10,7 +9,7 @@
 
 import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
 
-const _requestIdleCallback = function(cb: Function) {
+const _requestIdleCallback = function(cb: Function, options?: Object) {
   return setTimeout(() => {
     const start = Date.now();
     cb({
@@ -22,7 +21,8 @@ const _requestIdleCallback = function(cb: Function) {
   }, 1);
 };
 
-const _cancelIdleCallback = function(id: number) {
+// $FlowFixMe (TimeoutID type is not recognized by eslint)
+const _cancelIdleCallback = function(id) {
   clearTimeout(id);
 };
 

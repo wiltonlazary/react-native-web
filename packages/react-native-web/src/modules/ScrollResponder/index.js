@@ -1,21 +1,19 @@
 /**
  * Copyright (c) 2016-present, Nicolas Gallagher.
  * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
+ * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule ScrollResponder
  * @flow
  */
 
-import Dimensions from '../../apis/Dimensions';
-import findNodeHandle from '../findNodeHandle';
+import Dimensions from '../../exports/Dimensions';
+import findNodeHandle from '../../exports/findNodeHandle';
 import invariant from 'fbjs/lib/invariant';
-import Platform from '../../apis/Platform';
-import TextInputState from '../../components/TextInput/TextInputState';
-import UIManager from '../../apis/UIManager';
+import Platform from '../../exports/Platform';
+import TextInputState from '../TextInputState';
+import UIManager from '../../exports/UIManager';
 import warning from 'fbjs/lib/warning';
 
 /**
@@ -412,6 +410,11 @@ const ScrollResponderMixin = {
       invariant('zoomToRect is not implemented');
     }
   },
+
+  /**
+   * Displays the scroll indicators momentarily.
+   */
+  scrollResponderFlashScrollIndicators: function() {},
 
   /**
    * This method should be used as the callback to onFocus in a TextInputs'

@@ -74,7 +74,7 @@ yarn compile --watch
 To run the interactive storybook:
 
 ```
-yarn docs:start
+yarn website
 ```
 
 When you're also making changes to the 'react-native-web' source files, run this command in another process:
@@ -85,24 +85,18 @@ yarn compile --watch
 
 ## Benchmarks
 
-To run the performance benchmarks in a browser (opening `./packages/benchmarks/index.html`):
+To run the benchmarks locally:
 
 ```
-yarn benchmark
+yarn benchmarks
+open ./packages/benchmarks/dist/index.html
 ```
 
-### Pre-commit
-
-To format and lint code before commit:
+To develop against these benchmarks:
 
 ```
-yarn precommit
-```
-
-To format and lint the entire project:
-
-```
-yarn fmt
+yarn compile --watch
+yarn benchmarks --watch
 ```
 
 ### New Features
@@ -118,8 +112,7 @@ that we won't want to accept.
 1. Fork the repository and create your branch from `master`.
 2. If you've added code that should be tested, add tests!
 3. If you've changed APIs, update the documentation.
-4. Lint and format your code (`yarn precommit`).
-5. Ensure the tests pass (`yarn test`).
+4. Ensure the tests pass (`yarn test`).
 
 You can now submit a pull request, referencing any issues it addresses.
 

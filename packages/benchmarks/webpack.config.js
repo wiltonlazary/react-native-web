@@ -1,16 +1,16 @@
 const babelPreset = require('../../scripts/babel/preset');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const path = require('path');
-const webpack = require('webpack');
 
 const appDirectory = path.resolve(__dirname);
 
 module.exports = {
+  mode: 'production',
   context: __dirname,
-  entry: ['babel-polyfill', './src/index'],
+  entry: './src/index',
   output: {
     path: path.resolve(appDirectory, 'dist'),
-    filename: 'performance.bundle.js'
+    filename: 'bundle.js'
   },
   module: {
     rules: [
@@ -30,9 +30,9 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            cacheDirectory: true,
+            cacheDirectory: false,
             presets: babelPreset,
-            plugins: ['react-native-web']
+            plugins: ['styled-jsx/babel']
           }
         }
       }
@@ -42,16 +42,6 @@ module.exports = {
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       openAnalyzer: false
-    }),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production')
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        dead_code: true,
-        screw_ie8: true,
-        warnings: false
-      }
     })
   ],
   resolve: {

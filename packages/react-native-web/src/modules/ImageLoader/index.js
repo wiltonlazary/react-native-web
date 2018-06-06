@@ -1,8 +1,7 @@
 /**
  * Copyright (c) 2016-present, Nicolas Gallagher.
- * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
+ * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
  * @noflow
@@ -51,7 +50,16 @@ const ImageLoader = {
     id += 1;
     const image = new window.Image();
     image.onerror = onError;
-    image.onload = onLoad;
+    image.onload = e => {
+      // avoid blocking the main thread
+      if (typeof image.decode === 'function') {
+        image.decode().then(() => { onLoad(e) });
+      } else {
+        setTimeout(() => {
+          onLoad(e);
+        }, 0);
+      }
+    };
     image.src = uri;
     requests[`${id}`] = image;
     return id;

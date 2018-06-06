@@ -1,11 +1,11 @@
 [version]
-^0.61.0
+^0.63.0
 
 [ignore]
 <PROJECT_ROOT>/.*/__tests__/.*
-<PROJECT_ROOT>/packages/benchmarks/.*
 <PROJECT_ROOT>/packages/.*/dist/.*
-<PROJECT_ROOT>/website/.*
+<PROJECT_ROOT>/packages/examples/.*
+<PROJECT_ROOT>/packages/website/.*
 .*/node_modules/babel-plugin-transform-react-remove-prop-types/*
 
 [include]
@@ -14,4 +14,4 @@
 <PROJECT_ROOT>/types
 
 [options]
-unsafe.enable_getters_and_setters=true
+

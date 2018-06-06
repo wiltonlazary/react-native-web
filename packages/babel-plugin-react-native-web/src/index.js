@@ -1,87 +1,13 @@
-const getDistLocation = importName => {
-  const root = 'react-native-web/dist';
+const moduleMap = require('./moduleMap');
 
-  switch (importName) {
-    // apis
-    case 'Animated':
-    case 'AppRegistry':
-    case 'AppState':
-    case 'AsyncStorage':
-    case 'BackHandler':
-    case 'Clipboard':
-    case 'Dimensions':
-    case 'Easing':
-    case 'I18nManager':
-    case 'InteractionManager':
-    case 'Keyboard':
-    case 'Linking':
-    case 'NetInfo':
-    case 'PanResponder':
-    case 'PixelRatio':
-    case 'Platform':
-    case 'StyleSheet':
-    case 'UIManager':
-    case 'Vibration': {
-      return `${root}/apis/${importName}`;
-    }
+const isCommonJS = opts => opts.commonjs === true;
 
-    // components
-    case 'ActivityIndicator':
-    case 'ART':
-    case 'Button':
-    case 'FlatList':
-    case 'Image':
-    case 'KeyboardAvoidingView':
-    case 'ListView':
-    case 'Modal':
-    case 'Picker':
-    case 'ProgressBar':
-    case 'RefreshControl':
-    case 'ScrollView':
-    case 'SectionList':
-    case 'Slider':
-    case 'StatusBar':
-    case 'Switch':
-    case 'Text':
-    case 'TextInput':
-    case 'View':
-    case 'VirtualizedList': {
-      return `${root}/components/${importName}`;
-    }
-
-    case 'Touchable':
-    case 'TouchableHighlight':
-    case 'TouchableNativeFeedback':
-    case 'TouchableOpacity':
-    case 'TouchableWithoutFeedback': {
-      return `${root}/components/Touchable/${importName}`;
-    }
-
-    // modules
-    case 'createElement':
-    case 'findNodeHandle':
-    case 'NativeModules':
-    case 'processColor':
-    case 'render':
-    case 'unmountComponentAtNode': {
-      return `${root}/modules/${importName}`;
-    }
-
-    // propTypes
-    case 'ColorPropType':
-    case 'EdgeInsetsPropType':
-    case 'PointPropType': {
-      return `${root}/propTypes/${importName}`;
-    }
-    case 'TextPropTypes': {
-      return `${root}/components/Text/${importName}`;
-    }
-    case 'ViewPropTypes': {
-      return `${root}/components/View/${importName}`;
-    }
-
-    default:
-      return;
+const getDistLocation = (importName, opts) => {
+  const format = isCommonJS(opts) ? 'cjs/' : '';
+  if (importName === 'index') {
+    return `react-native-web/dist/${format}index`;
+  } else if (importName && moduleMap[importName]) {
+    return `react-native-web/dist/${format}exports/${importName}`;
   }
 };
 
@@ -92,7 +18,7 @@ const isReactNativeRequire = (t, node) => {
   }
   const { id, init } = declarations[0];
   return (
-    t.isObjectPattern(id) &&
+    (t.isObjectPattern(id) || t.isIdentifier(id)) &&
     t.isCallExpression(init) &&
     t.isIdentifier(init.callee) &&
     init.callee.name === 'require' &&
@@ -117,7 +43,7 @@ module.exports = function({ types: t }) {
             .map(specifier => {
               if (t.isImportSpecifier(specifier)) {
                 const importName = specifier.imported.name;
-                const distLocation = getDistLocation(importName);
+                const distLocation = getDistLocation(importName, state.opts);
 
                 if (distLocation) {
                   return t.importDeclaration(
@@ -128,7 +54,7 @@ module.exports = function({ types: t }) {
               }
               return t.importDeclaration(
                 [specifier],
-                t.stringLiteral('react-native-web/dist/index')
+                t.stringLiteral(getDistLocation('index', state.opts))
               );
             })
             .filter(Boolean);
@@ -144,7 +70,7 @@ module.exports = function({ types: t }) {
               if (t.isExportSpecifier(specifier)) {
                 const exportName = specifier.exported.name;
                 const localName = specifier.local.name;
-                const distLocation = getDistLocation(localName);
+                const distLocation = getDistLocation(localName, state.opts);
 
                 if (distLocation) {
                   return t.exportNamedDeclaration(
@@ -157,7 +83,7 @@ module.exports = function({ types: t }) {
               return t.exportNamedDeclaration(
                 null,
                 [specifier],
-                t.stringLiteral('react-native-web/dist/index')
+                t.stringLiteral(getDistLocation('index', state.opts))
               );
             })
             .filter(Boolean);
@@ -168,21 +94,41 @@ module.exports = function({ types: t }) {
       VariableDeclaration(path, state) {
         if (isReactNativeRequire(t, path.node)) {
           const { id } = path.node.declarations[0];
-          const imports = id.properties
-            .map(identifier => {
-              const distLocation = getDistLocation(identifier.key.name);
-              if (distLocation) {
-                return t.variableDeclaration(path.node.kind, [
-                  t.variableDeclarator(
-                    t.identifier(identifier.value.name),
-                    t.callExpression(t.identifier('require'), [t.stringLiteral(distLocation)])
-                  )
-                ]);
-              }
-            })
-            .filter(Boolean);
+          if (t.isObjectPattern(id)) {
+            const imports = id.properties
+              .map(identifier => {
+                const distLocation = getDistLocation(identifier.key.name, state.opts);
+                if (distLocation) {
+                  return t.variableDeclaration(path.node.kind, [
+                    t.variableDeclarator(
+                      t.identifier(identifier.value.name),
+                      t.memberExpression(
+                        t.callExpression(t.identifier('require'), [t.stringLiteral(distLocation)]),
+                        t.identifier('default')
+                      )
+                    )
+                  ]);
+                }
+              })
+              .filter(Boolean);
 
-          path.replaceWithMultiple(imports);
+            path.replaceWithMultiple(imports);
+          } else if (t.isIdentifier(id)) {
+            const name = id.name;
+            const importIndex = t.variableDeclaration(path.node.kind, [
+              t.variableDeclarator(
+                t.identifier(name),
+                t.memberExpression(
+                  t.callExpression(t.identifier('require'), [
+                    t.stringLiteral(getDistLocation('index', state.opts))
+                  ]),
+                  t.identifier('default')
+                )
+              )
+            ]);
+
+            path.replaceWith(importIndex);
+          }
         }
       }
     }

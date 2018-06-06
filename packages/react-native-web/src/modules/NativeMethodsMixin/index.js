@@ -1,23 +1,17 @@
 /**
  * Copyright (c) 2016-present, Nicolas Gallagher.
  * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
+ * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @providesModule NativeMethodsMixin
  * @flow
  */
 
 import createDOMProps from '../createDOMProps';
-import findNodeHandle from '../findNodeHandle';
-import i18nStyle from '../../apis/StyleSheet/i18nStyle';
-import StyleRegistry from '../../apis/StyleSheet/registry';
-import UIManager from '../../apis/UIManager';
-
-const hyphenPattern = /-([a-z])/g;
-const toCamelCase = str => str.replace(hyphenPattern, m => m[1].toUpperCase());
+import findNodeHandle from '../../exports/findNodeHandle';
+import styleResolver from '../../exports/StyleSheet/styleResolver';
+import UIManager from '../../exports/UIManager';
 
 type MeasureOnSuccessCallback = (
   x: number,
@@ -105,31 +99,11 @@ const NativeMethodsMixin = {
     if (!nativeProps) {
       return;
     }
-
-    // Copy of existing DOM state
     const node = findNodeHandle(this);
-    const nodeStyle = node.style;
-    const classList = Array.prototype.slice.call(node.classList);
-    const style = {};
-    // DOM style is a CSSStyleDeclaration
-    // https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration
-    for (let i = 0; i < node.style.length; i += 1) {
-      const property = nodeStyle.item(i);
-      if (property) {
-        // DOM style uses hyphenated prop names and may include vendor prefixes
-        // Transform back into React DOM style.
-        style[toCamelCase(property)] = nodeStyle.getPropertyValue(property);
-      }
-    }
-
-    const domStyleProps = { classList, style };
-    const props = {
-      ...nativeProps,
-      style: i18nStyle(nativeProps.style)
-    };
-    // Next DOM state
-    const domProps = createDOMProps(null, props, style =>
-      StyleRegistry.resolveStateful(style, domStyleProps, { i18n: false })
+    // Next state is determined by comparison to existing state (in the DOM).
+    // Existing state has already gone through i18n transform
+    const domProps = createDOMProps(null, nativeProps, style =>
+      styleResolver.resolveWithNode(style, node)
     );
     UIManager.updateView(node, domProps, this);
   }
