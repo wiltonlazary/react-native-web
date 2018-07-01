@@ -52,8 +52,10 @@ const observe = instance => {
 
   if (resizeObserver) {
     const node = findNodeHandle(instance);
-    node._layoutId = id;
-    resizeObserver.observe(node);
+    if (node) {
+      node._layoutId = id;
+      resizeObserver.observe(node);
+    }
   } else {
     instance._layoutId = id;
     instance._handleLayout();
@@ -64,8 +66,10 @@ const unobserve = instance => {
   delete registry[instance._layoutId];
   if (resizeObserver) {
     const node = findNodeHandle(instance);
-    delete node._layoutId;
-    resizeObserver.unobserve(node);
+    if (node) {
+      delete node._layoutId;
+      resizeObserver.unobserve(node);
+    }
   } else {
     delete instance._layoutId;
   }
@@ -131,11 +135,12 @@ const applyLayout = Component => {
           ) {
             this._layoutState = { x, y, width, height };
             const nativeEvent = {
-              layout: this._layoutState,
-              get target() {
-                return findNodeHandle(this);
-              }
+              layout: this._layoutState
             };
+            Object.defineProperty(nativeEvent, 'target', {
+              enumerable: true,
+              get: () => findNodeHandle(this)
+            });
             onLayout({ nativeEvent, timeStamp: Date.now() });
           }
         }
