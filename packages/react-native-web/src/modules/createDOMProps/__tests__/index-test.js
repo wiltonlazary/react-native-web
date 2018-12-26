@@ -65,9 +65,7 @@ describe('modules/createDOMProps', () => {
       });
     });
 
-    describe('"accessibilityRole" of "button"', () => {
-      const accessibilityRole = 'button';
-
+    const testFocusableRole = accessibilityRole => {
       test('default case', () => {
         expect(createProps({ accessibilityRole })).toEqual(
           expect.objectContaining({ 'data-focusable': true, tabIndex: '0' })
@@ -118,6 +116,14 @@ describe('modules/createDOMProps', () => {
           })
         ).not.toEqual(expect.objectContaining({ 'data-focusable': true, tabIndex: '0' }));
       });
+    };
+
+    describe('"accessibilityRole" of "button"', () => {
+      testFocusableRole('button');
+    });
+
+    describe('"accessibilityRole" of "menuitem"', () => {
+      testFocusableRole('menuitem');
     });
 
     describe('with unfocusable accessibilityRole', () => {
@@ -175,6 +181,12 @@ describe('modules/createDOMProps', () => {
   test('prop "importantForAccessibility" becomes "aria-hidden"', () => {
     const props = createProps({ importantForAccessibility: 'no-hide-descendants' });
     expect(props['aria-hidden']).toEqual(true);
+  });
+
+  test('prop "nativeID" becomes "id"', () => {
+    const nativeID = 'Example.nativeID';
+    const props = createProps({ nativeID });
+    expect(props.id).toEqual(nativeID);
   });
 
   test('prop "testID" becomes "data-testid"', () => {

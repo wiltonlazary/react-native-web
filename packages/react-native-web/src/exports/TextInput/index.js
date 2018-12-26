@@ -81,6 +81,7 @@ class TextInput extends Component<*> {
     clearTextOnFocus: bool,
     defaultValue: string,
     editable: bool,
+    inputAccessoryViewID: string,
     keyboardType: oneOf([
       'default',
       'email-address',
@@ -142,7 +143,7 @@ class TextInput extends Component<*> {
     editable: true,
     keyboardType: 'default',
     multiline: false,
-    numberOfLines: 2,
+    numberOfLines: 1,
     secureTextEntry: false,
     style: emptyObject
   };
@@ -190,22 +191,34 @@ class TextInput extends Component<*> {
       selectTextOnFocus,
       spellCheck,
       /* react-native compat */
+      accessibilityViewIsModal,
+      allowFontScaling,
       caretHidden,
       clearButtonMode,
       dataDetectorTypes,
       disableFullscreenUI,
       enablesReturnKeyAutomatically,
+      hitSlop,
       inlineImageLeft,
       inlineImagePadding,
+      inputAccessoryViewID,
       keyboardAppearance,
+      needsOffscreenAlphaCompositing,
+      onAccessibilityTap,
       onContentSizeChange,
       onEndEditing,
+      onMagicTap,
       onScroll,
+      removeClippedSubviews,
+      renderToHardwareTextureAndroid,
       returnKeyLabel,
       returnKeyType,
+      scrollEnabled,
       selectionColor,
       selectionState,
+      shouldRasterizeIOS,
       textBreakStrategy,
+      textContentType,
       underlineColorAndroid,
       /* eslint-enable */
       ...otherProps
@@ -282,6 +295,7 @@ class TextInput extends Component<*> {
     if (onChangeText) {
       onChangeText(text);
     }
+    this._handleSelectionChange(e);
   };
 
   _handleFocus = e => {
@@ -303,11 +317,13 @@ class TextInput extends Component<*> {
     // Prevent key events bubbling (see #612)
     e.stopPropagation();
 
-    // Backspace, Tab, Cmd+Enter, and Arrow keys only fire 'keydown' DOM events
+    // Backspace, Escape, Tab, Cmd+Enter, and Arrow keys only fire 'keydown'
+    // DOM events
     if (
       e.which === 8 ||
       e.which === 9 ||
       (e.which === 13 && e.metaKey) ||
+      e.which === 27 ||
       e.which === 37 ||
       e.which === 38 ||
       e.which === 39 ||
@@ -333,6 +349,9 @@ class TextInput extends Component<*> {
           break;
         case 13:
           keyValue = 'Enter';
+          break;
+        case 27:
+          keyValue = 'Escape';
           break;
         case 32:
           keyValue = ' ';
@@ -376,6 +395,8 @@ class TextInput extends Component<*> {
 
     if (!e.isDefaultPrevented() && e.which === 13 && !e.shiftKey) {
       if ((blurOnSubmit || !multiline) && onSubmitEditing) {
+        // prevent "Enter" from inserting a newline
+        e.preventDefault();
         e.nativeEvent = { target: e.target, text: e.target.value };
         onSubmitEditing(e);
       }

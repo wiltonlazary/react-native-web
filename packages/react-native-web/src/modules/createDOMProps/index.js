@@ -77,6 +77,7 @@ const createDOMProps = (component, props, styleResolver) => {
     accessibilityLabel,
     accessibilityLiveRegion,
     importantForAccessibility,
+    nativeID,
     placeholderTextColor,
     pointerEvents,
     style: providedStyle,
@@ -131,7 +132,7 @@ const createDOMProps = (component, props, styleResolver) => {
     } else {
       domProps['data-focusable'] = true;
     }
-  } else if (role === 'button' || role === 'textbox') {
+  } else if (AccessibilityUtil.buttonLikeRoles[role] || role === 'textbox') {
     if (accessible !== false && focusable) {
       domProps['data-focusable'] = true;
       domProps.tabIndex = '0';
@@ -164,10 +165,15 @@ const createDOMProps = (component, props, styleResolver) => {
   }
 
   // OTHER
+  // Native element ID
+  if (nativeID && nativeID.constructor === String) {
+    domProps.id = nativeID;
+  }
   // Link security and automation test ids
   if (component === 'a' && domProps.target === '_blank') {
     domProps.rel = `${domProps.rel || ''} noopener noreferrer`;
   }
+  // Automated test IDs
   if (testID && testID.constructor === String) {
     domProps['data-testid'] = testID;
   }
