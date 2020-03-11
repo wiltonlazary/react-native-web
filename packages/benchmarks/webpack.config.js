@@ -23,7 +23,11 @@ module.exports = {
           'style-loader',
           {
             loader: 'css-loader',
-            options: { modules: true, localIdentName: '[hash:base64:8]' }
+            options: {
+              modules: {
+                localIdentName: '[hash:base64:8]'
+              }
+            }
           }
         ]
       },
@@ -34,7 +38,7 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             cacheDirectory: false,
-            presets: babelPreset,
+            presets: [babelPreset],
             plugins: ['styled-jsx/babel']
           }
         }

@@ -1,11 +1,10 @@
 [version]
-^0.63.0
+^0.109.0
 
 [ignore]
 <PROJECT_ROOT>/.*/__tests__/.*
 <PROJECT_ROOT>/packages/.*/dist/.*
-<PROJECT_ROOT>/packages/examples/.*
-<PROJECT_ROOT>/packages/website/.*
+<PROJECT_ROOT>/packages/docs/.*
 .*/node_modules/babel-plugin-transform-react-remove-prop-types/*
 
 [include]
@@ -15,3 +14,7 @@
 
 [options]
 
+suppress_type=$FlowIssue
+suppress_type=$FlowFixMe
+suppress_type=$FlowFixMeProps
+suppress_type=$FlowFixMeState

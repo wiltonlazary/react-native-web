@@ -35,16 +35,10 @@ describe('modules/createDOMProps', () => {
         expect(createProps({ accessibilityRole, disabled: true })).toEqual(
           expect.objectContaining({ 'aria-disabled': true, disabled: true, tabIndex: '-1' })
         );
-        expect(createProps({ accessibilityRole, 'aria-disabled': true })).toEqual(
-          expect.objectContaining({ 'aria-disabled': true, disabled: true, tabIndex: '-1' })
-        );
       });
 
       test('when "disabled" is false', () => {
         expect(createProps({ accessibilityRole, disabled: false })).toEqual(
-          expect.objectContaining({ 'data-focusable': true })
-        );
-        expect(createProps({ accessibilityRole, 'aria-disabled': false })).toEqual(
           expect.objectContaining({ 'data-focusable': true })
         );
       });
@@ -88,16 +82,10 @@ describe('modules/createDOMProps', () => {
         expect(createProps({ accessibilityRole, disabled: true })).toEqual(
           expect.objectContaining({ 'aria-disabled': true, disabled: true })
         );
-        expect(createProps({ accessibilityRole, 'aria-disabled': true })).toEqual(
-          expect.objectContaining({ 'aria-disabled': true, disabled: true })
-        );
       });
 
       test('when "disabled" is false', () => {
         expect(createProps({ accessibilityRole, disabled: false })).toEqual(
-          expect.objectContaining({ 'data-focusable': true, tabIndex: '0' })
-        );
-        expect(createProps({ accessibilityRole, 'aria-disabled': false })).toEqual(
           expect.objectContaining({ 'data-focusable': true, tabIndex: '0' })
         );
       });
@@ -164,11 +152,72 @@ describe('modules/createDOMProps', () => {
     expect(props['aria-live']).toEqual('off');
   });
 
-  describe('prop "accessibilityRole"', () => {
-    test('does not become "role" when value is "label"', () => {
-      const accessibilityRole = 'label';
-      const props = createProps({ accessibilityRole });
-      expect(props.role).toBeUndefined();
+  test('prop "accessibilityRole" becomes "role"', () => {
+    const accessibilityRole = 'button';
+    const props = createProps({ accessibilityRole });
+    expect(props.role).toEqual('button');
+  });
+
+  describe('prop "accessibilityState"', () => {
+    function createAccessibilityState(value) {
+      return {
+        busy: value,
+        checked: value,
+        disabled: value,
+        expanded: value,
+        grabbed: value,
+        hidden: value,
+        invalid: value,
+        modal: value,
+        pressed: value,
+        readonly: value,
+        required: value,
+        selected: value
+      };
+    }
+
+    test('values are "undefined"', () => {
+      const accessibilityState = createAccessibilityState(undefined);
+      const props = createProps({ accessibilityState });
+      expect(props).toMatchSnapshot();
+    });
+
+    test('values are "false"', () => {
+      const accessibilityState = createAccessibilityState(false);
+      const props = createProps({ accessibilityState });
+      expect(props).toMatchSnapshot();
+    });
+
+    test('values are "true"', () => {
+      const accessibilityState = createAccessibilityState(true);
+      const props = createProps({ accessibilityState });
+      expect(props).toMatchSnapshot();
+    });
+  });
+
+  describe('prop "accessibilityRelationship"', () => {
+    function createAccessibilityRelationship(value) {
+      return {
+        activedescendant: value,
+        controls: value,
+        describedby: value,
+        details: value,
+        haspopup: value,
+        labelledby: value,
+        owns: value
+      };
+    }
+
+    test('values are "undefined"', () => {
+      const accessibilityRelationship = createAccessibilityRelationship(undefined);
+      const props = createProps({ accessibilityRelationship });
+      expect(props).toMatchSnapshot();
+    });
+
+    test('values are "id" string', () => {
+      const accessibilityRelationship = createAccessibilityRelationship('id');
+      const props = createProps({ accessibilityRelationship });
+      expect(props).toMatchSnapshot();
     });
   });
 
@@ -200,23 +249,15 @@ describe('modules/createDOMProps', () => {
     expect(props.rel).toMatchSnapshot();
   });
 
-  test('includes reset styles for "a" elements', () => {
-    const props = createDOMProps('a');
-    expect(props.className).toMatchSnapshot();
+  test('includes cursor style for pressable roles', () => {
+    expect(createDOMProps('span', { accessibilityRole: 'link' }).className).toMatchSnapshot();
+    expect(createDOMProps('span', { accessibilityRole: 'button' }).className).toMatchSnapshot();
   });
 
-  test('includes reset styles for "button" elements', () => {
-    const props = createDOMProps('button');
-    expect(props.className).toMatchSnapshot();
-  });
-
-  test('includes cursor style for "button" role', () => {
-    const props = createDOMProps('span', { accessibilityRole: 'button' });
-    expect(props.className).toMatchSnapshot();
-  });
-
-  test('includes reset styles for "ul" elements', () => {
-    const props = createDOMProps('ul');
-    expect(props.className).toMatchSnapshot();
+  test('includes base reset style for browser-styled elements', () => {
+    expect(createDOMProps('a').className).toMatchSnapshot();
+    expect(createDOMProps('button').className).toMatchSnapshot();
+    expect(createDOMProps('li').className).toMatchSnapshot();
+    expect(createDOMProps('ul').className).toMatchSnapshot();
   });
 });
